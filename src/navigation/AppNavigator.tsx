@@ -41,7 +41,7 @@ export default function AppNavigator() {
   return (
     <NavigationContainer>
       <Stack.Navigator
-        initialRouteName={session ? "Configuracoes" : "Auth"}
+        initialRouteName={session ? "Home" : "Auth"}
         screenOptions={{ headerShown: false }}
       >
         {!session ? (
