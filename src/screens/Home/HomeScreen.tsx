@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -11,7 +11,7 @@ import {
   RefreshControl,
   useColorScheme,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -225,9 +225,11 @@ export default function HomeScreen() {
     }
   }, [navigation]);
 
-  useEffect(() => {
-    carregarDados().finally(() => setLoading(false));
-  }, [carregarDados]);
+  useFocusEffect(
+    useCallback(() => {
+      carregarDados().finally(() => setLoading(false));
+    }, [carregarDados]),
+  );
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);

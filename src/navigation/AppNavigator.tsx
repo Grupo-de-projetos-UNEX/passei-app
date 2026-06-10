@@ -63,7 +63,11 @@ export default function AppNavigator() {
       >
         <Stack.Screen name="Auth" component={AuthScreen} />
         <Stack.Screen name="Home" component={HomeScreen} />
-        <Stack.Screen name="AdicionarMateria" component={AdicionarMateriaScreen} />
+        <Stack.Screen
+          name="AdicionarMateria"
+          component={AdicionarMateriaScreen}
+          options={{ presentation: 'transparentModal', cardOverlayEnabled: true }}
+        />
         <Stack.Screen name="DetalheMateria" component={DetalheMateriaScreen} />
         <Stack.Screen name="LancarNota" component={LancarNotaScreen} />
         <Stack.Screen name="EditarAtividades" component={EditarAtividadesScreen} />

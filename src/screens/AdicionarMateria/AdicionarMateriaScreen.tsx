@@ -9,16 +9,20 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
+  useColorScheme,
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../types/navigation';
 import { MateriasRepository } from '../../lib/repositories';
 import { AuthRepository } from '../../lib/repositories';
-import { cores } from '../../utils/tema';
+import { temaClaro, temaEscuro, CoresTema } from '../../utils/tema';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'AdicionarMateria'>;
 
 export default function AdicionarMateriaScreen({ navigation }: Props) {
+  const isDark = useColorScheme() === 'dark';
+  const tema: CoresTema = isDark ? temaEscuro : temaClaro;
+
   const [nome, setNome] = useState('');
   const [carregando, setCarregando] = useState(false);
 
@@ -46,6 +50,8 @@ export default function AdicionarMateriaScreen({ navigation }: Props) {
     }
   }
 
+  const styles = criarEstilos(tema);
+
   return (
     <KeyboardAvoidingView
       style={styles.overlay}
@@ -57,7 +63,7 @@ export default function AdicionarMateriaScreen({ navigation }: Props) {
         <TextInput
           style={styles.input}
           placeholder="Ex: Cálculo I"
-          placeholderTextColor={cores.textoSecundario}
+          placeholderTextColor={tema.textoSecundario}
           value={nome}
           onChangeText={setNome}
           autoFocus
@@ -84,55 +90,59 @@ export default function AdicionarMateriaScreen({ navigation }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.4)',
-    justifyContent: 'flex-end',
-  },
-  sheet: {
-    backgroundColor: cores.superficie,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    padding: 24,
-    paddingBottom: 40,
-    gap: 16,
-  },
-  titulo: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: cores.texto,
-    marginBottom: 4,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: cores.borda,
-    borderRadius: 12,
-    padding: 14,
-    fontSize: 16,
-    color: cores.texto,
-    backgroundColor: cores.fundo,
-  },
-  botao: {
-    backgroundColor: cores.primaria,
-    borderRadius: 12,
-    padding: 16,
-    alignItems: 'center',
-  },
-  botaoDesabilitado: {
-    opacity: 0.6,
-  },
-  botaoTexto: {
-    color: '#fff',
-    fontWeight: '700',
-    fontSize: 16,
-  },
-  botaoCancelar: {
-    alignItems: 'center',
-    padding: 8,
-  },
-  botaoCancelarTexto: {
-    color: cores.textoSecundario,
-    fontSize: 15,
-  },
-});
+function criarEstilos(tema: CoresTema) {
+  return StyleSheet.create({
+    overlay: {
+      flex: 1,
+      backgroundColor: 'rgba(0,0,0,0.55)',
+      justifyContent: 'flex-end',
+    },
+    sheet: {
+      backgroundColor: tema.superficie,
+      borderTopLeftRadius: 24,
+      borderTopRightRadius: 24,
+      padding: 24,
+      paddingBottom: 40,
+      gap: 16,
+      borderTopWidth: 1,
+      borderColor: tema.borda,
+    },
+    titulo: {
+      fontSize: 20,
+      fontWeight: '700',
+      color: tema.texto,
+      marginBottom: 4,
+    },
+    input: {
+      borderWidth: 1,
+      borderColor: tema.borda,
+      borderRadius: 12,
+      padding: 14,
+      fontSize: 16,
+      color: tema.texto,
+      backgroundColor: tema.inputBg,
+    },
+    botao: {
+      backgroundColor: tema.primaria,
+      borderRadius: 12,
+      padding: 16,
+      alignItems: 'center',
+    },
+    botaoDesabilitado: {
+      opacity: 0.6,
+    },
+    botaoTexto: {
+      color: '#fff',
+      fontWeight: '700',
+      fontSize: 16,
+    },
+    botaoCancelar: {
+      alignItems: 'center',
+      padding: 8,
+    },
+    botaoCancelarTexto: {
+      color: tema.textoSecundario,
+      fontSize: 15,
+    },
+  });
+}
