@@ -42,6 +42,8 @@ export const temaEscuro = {
   toggleFundo: "rgba(255,255,255,0.05)",
 };
 
+export const cores = temaClaro;
+
 export type CoresTema = typeof temaClaro;
 
 export const tipografia = {
