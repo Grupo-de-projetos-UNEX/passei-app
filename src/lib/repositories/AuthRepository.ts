@@ -1,4 +1,4 @@
-import { supabase } from '../supabase';
+import { supabase } from "../supabase";
 
 export const AuthRepository = {
   async signUp(email: string, password: string, nome: string) {
@@ -40,6 +40,14 @@ export const AuthRepository = {
   async resetPassword(email: string) {
     const { error } = await supabase.auth.resetPasswordForEmail(email);
     if (error) throw error;
+  },
+
+  async updateProfile(metadata: { meta_aprovacao?: number; nome?: string }) {
+    const { data, error } = await supabase.auth.updateUser({
+      data: metadata,
+    });
+    if (error) throw error;
+    return data.user;
   },
 
   onAuthStateChange(
