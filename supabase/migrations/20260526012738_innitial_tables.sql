@@ -20,8 +20,6 @@ create table public.materias (
   id                    uuid primary key default gen_random_uuid(),
   user_id               uuid not null references auth.users(id) on delete cascade,
   nome                  text not null,
-  percentual_aprovacao  numeric(5,2) not null default 70.00
-                        check (percentual_aprovacao > 0 and percentual_aprovacao <= 100),
   created_at            timestamptz not null default now(),
   updated_at            timestamptz not null default now()
 );

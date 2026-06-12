@@ -13,8 +13,7 @@ import {
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../types/navigation';
-import { MateriasRepository } from '../../lib/repositories';
-import { AuthRepository } from '../../lib/repositories';
+import { MateriasRepository, AuthRepository } from '../../lib/repositories';
 import { temaClaro, temaEscuro, CoresTema } from '../../utils/tema';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'AdicionarMateria'>;

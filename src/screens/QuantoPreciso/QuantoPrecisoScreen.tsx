@@ -102,7 +102,7 @@ function Divisor({ estilos }: { estilos: any }) {
 export default function QuantoPrecisoScreen() {
   const navigation = useNavigation<Nav>();
   const route = useRoute<Route>();
-  const { materia } = route.params;
+  const { materia, percentualAprovacao } = route.params;
 
   // ── Tema Dinâmico ──
   const isDark = useColorScheme() === 'dark';
@@ -135,11 +135,11 @@ export default function QuantoPrecisoScreen() {
     carregarAtividades();
   }, [carregarAtividades]);
 
-  const meta = calcularMeta(materia.percentual_aprovacao);
+  const meta = calcularMeta(percentualAprovacao);
   const garantidos = calcularPontosGarantidos(atividades);
   const emJogo = calcularPontosEmJogo(atividades);
-  const precisa = calcularQuantoPrecisa(atividades, materia.percentual_aprovacao);
-  const status = calcularStatus(atividades, materia.percentual_aprovacao);
+  const precisa = calcularQuantoPrecisa(atividades, percentualAprovacao);
+  const status = calcularStatus(atividades, percentualAprovacao);
   const pendentes = atividades.filter((a) => a.pontos_obtidos === null);
   const temDados = atividades.some((a) => a.pontos_obtidos !== null);
 

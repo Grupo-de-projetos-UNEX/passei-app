@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import {
   View,
   Text,
+  TextInput,
   TouchableOpacity,
   ActivityIndicator,
   ScrollView,
@@ -13,79 +14,84 @@ import { useNavigation } from "@react-navigation/native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import Slider from "@react-native-community/slider";
 
-import { AuthRepository } from "../../lib/repositories";
+import { AuthRepository, ProfileRepository } from "../../lib/repositories";
 import { temaClaro, temaEscuro } from "../../utils/tema";
 import { criarEstilos } from "./ConfiguracoesScreen.styles";
-
-interface UserProfile {
-  nome: string;
-  email: string;
-  metaAprovacao: number;
-}
 
 export default function ConfiguracoesScreen() {
   const navigation = useNavigation();
 
-  // ── Tema Responsivo ─────────────────────────────────────────────────────────
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
   const coresAtuais = isDark ? temaEscuro : temaClaro;
   const styles = useMemo(() => criarEstilos(coresAtuais), [coresAtuais]);
 
-  // ── Estados ─────────────────────────────────────────────────────────────────
   const [loading, setLoading] = useState(true);
+  const [savingNome, setSavingNome] = useState(false);
   const [savingSlider, setSavingSlider] = useState(false);
-  const [usuario, setUsuario] = useState<UserProfile | null>(null);
+
+  const [userId, setUserId] = useState("");
+  const [email, setEmail] = useState("");
+  const [nome, setNome] = useState("");
+  const [nomeSalvo, setNomeSalvo] = useState("");
   const [percentual, setPercentual] = useState(70);
 
-  // ── Buscar dados do Supabase ao montar a tela ───────────────────────────────
   useEffect(() => {
     async function carregarPerfil() {
       try {
         setLoading(true);
-        // Exemplo profissional buscando do seu repositório mapeado com Supabase
-        // Se o seu método for diferente (ex: AuthRepository.getSession), adapte aqui
-        const session = await AuthRepository.getSession();
+        const user = await AuthRepository.getUser();
+        if (!user) return;
 
-        if (session?.user) {
-          setUsuario({
-            nome: session.user.user_metadata?.nome || "Usuário",
-            email: session.user.email || "seu@email.com",
-            metaAprovacao: session.user.user_metadata?.meta_aprovacao ?? 70,
-          });
-          setPercentual(session.user.user_metadata?.meta_aprovacao ?? 70);
-        }
-      } catch (error) {
+        setUserId(user.id);
+        setEmail(user.email ?? "");
+
+        const profile = await ProfileRepository.getProfile(user.id);
+        setNome(profile.nome ?? "");
+        setNomeSalvo(profile.nome ?? "");
+        setPercentual(profile.percentual_aprovacao ?? 70);
+      } catch {
         Alert.alert("Erro", "Não foi possível carregar os dados do perfil.");
       } finally {
         setLoading(false);
       }
     }
-
     carregarPerfil();
   }, []);
 
-  // ── Salvar nova meta no Supabase ao soltar o Slider ────────────────────────
+  async function handleSalvarNome() {
+    if (!nome.trim()) {
+      Alert.alert("Campo obrigatório", "O nome não pode ficar vazio.");
+      return;
+    }
+    try {
+      setSavingNome(true);
+      await ProfileRepository.updateProfile(userId, { nome: nome.trim() });
+      setNomeSalvo(nome.trim());
+      setNome(nome.trim());
+    } catch {
+      Alert.alert("Erro", "Não foi possível salvar o nome.");
+    } finally {
+      setSavingNome(false);
+    }
+  }
+
   async function handleSalvarMeta(valor: number) {
     try {
       setSavingSlider(true);
-
-      // Removemos o "as any" e chamamos direto!
-      await AuthRepository.updateProfile({ meta_aprovacao: valor });
-
+      await ProfileRepository.updateProfile(userId, {
+        percentual_aprovacao: valor,
+      });
       setPercentual(valor);
-    } catch (error) {
-      console.error(error); // Mantém para ver no terminal se algo der errado
-      Alert.alert("Erro", "Não foi possível salvar sua nova meta no banco.");
-      if (usuario) setPercentual(usuario.metaAprovacao);
+    } catch {
+      Alert.alert("Erro", "Não foi possível salvar sua nova meta.");
     } finally {
       setSavingSlider(false);
     }
   }
 
-  // ── Tratar Ação de Logout ───────────────────────────────────────────────────
   function handleSair() {
-    Alert.alert("Sair da conta", "Tem certeza que deseja sair do aplicativo?", [
+    Alert.alert("Sair da conta", "Tem certeza que deseja sair?", [
       { text: "Cancelar", style: "cancel" },
       {
         text: "Sair",
@@ -93,11 +99,7 @@ export default function ConfiguracoesScreen() {
         onPress: async () => {
           try {
             await AuthRepository.signOut();
-            navigation.reset({
-              index: 0,
-              routes: [{ name: "Auth" as never }],
-            });
-          } catch (error) {
+          } catch {
             Alert.alert("Erro", "Não foi possível deslogar. Tente novamente.");
           }
         },
@@ -112,6 +114,8 @@ export default function ConfiguracoesScreen() {
       </View>
     );
   }
+
+  const nomeAlterado = nome.trim() !== nomeSalvo;
 
   return (
     <SafeAreaView style={styles.flex}>
@@ -139,14 +143,41 @@ export default function ConfiguracoesScreen() {
         <View style={styles.secao}>
           <Text style={styles.secaoLabel}>Perfil</Text>
           <View style={styles.card}>
-            <View style={styles.profileItem}>
-              <Text style={styles.itemLabel}>Nome</Text>
-              <Text style={styles.itemValue}>{usuario?.nome}</Text>
+            {/* Nome editável */}
+            <View style={styles.profileItemRow}>
+              <View style={styles.profileItemLeft}>
+                <Text style={styles.itemLabel}>Nome</Text>
+                <TextInput
+                  style={styles.nomeInput}
+                  value={nome}
+                  onChangeText={setNome}
+                  placeholder="Seu nome"
+                  placeholderTextColor={coresAtuais.textoDesabilitado}
+                  returnKeyType="done"
+                  onSubmitEditing={nomeAlterado ? handleSalvarNome : undefined}
+                />
+              </View>
+              {nomeAlterado && (
+                <TouchableOpacity
+                  style={styles.nomeSaveBtn}
+                  onPress={handleSalvarNome}
+                  disabled={savingNome}
+                  activeOpacity={0.8}
+                >
+                  {savingNome ? (
+                    <ActivityIndicator size="small" color="#fff" />
+                  ) : (
+                    <Text style={styles.nomeSaveBtnText}>Salvar</Text>
+                  )}
+                </TouchableOpacity>
+              )}
             </View>
+
             <View style={styles.divisor} />
+
             <View style={styles.profileItem}>
               <Text style={styles.itemLabel}>Email</Text>
-              <Text style={styles.itemValueRegular}>{usuario?.email}</Text>
+              <Text style={styles.itemValueRegular}>{email}</Text>
             </View>
           </View>
         </View>
@@ -165,8 +196,7 @@ export default function ConfiguracoesScreen() {
             </View>
 
             <Text style={styles.sliderDescription}>
-              Usado como meta para novas matérias. Matérias existentes mantêm o
-              percentual que já têm.
+              Usado como meta para todas as matérias.
             </Text>
 
             <Slider

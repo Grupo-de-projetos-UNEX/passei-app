@@ -34,6 +34,7 @@ type MateriaComStatus = Materia & {
   pontosObtidos: number;
   pontosMaximos: number;
   atividadesPendentes: number;
+  percentualAprovacao: number;
 };
 
 type Nav = StackNavigationProp<RootStackParamList, 'Home'>;
@@ -42,7 +43,7 @@ type Nav = StackNavigationProp<RootStackParamList, 'Home'>;
 
 const getStatusConfig = (status: StatusMateria, tema: CoresTema) => {
   const metaMsg = (m: MateriaComStatus) => {
-    const meta = calcularMeta(m.percentual_aprovacao);
+    const meta = calcularMeta(m.percentualAprovacao);
     const faltam = Math.max(0, Math.ceil(meta - m.pontosObtidos));
     return `Faltam ${faltam} pts em ${m.atividadesPendentes} atividade${m.atividadesPendentes !== 1 ? 's' : ''}`;
   };
@@ -81,7 +82,7 @@ const MateriaCard = React.memo(
   }) => {
     const cfg = getStatusConfig(item.status, tema);
 
-    const meta = calcularMeta(item.percentual_aprovacao);
+    const meta = calcularMeta(item.percentualAprovacao);
     const progresso = item.pontosMaximos > 0
         ? Math.min(1, item.pontosObtidos / item.pontosMaximos)
         : 0;
@@ -178,7 +179,7 @@ export default function HomeScreen() {
       const [profileRes, materiasRes] = await Promise.all([
         supabase
           .from('profiles')
-          .select('nome')
+          .select('nome, percentual_aprovacao')
           .eq('id', user.id)
           .single(),
         supabase
@@ -194,10 +195,12 @@ export default function HomeScreen() {
 
       if (materiasRes.error) throw materiasRes.error;
 
+      const percentualAprovacao = profileRes.data?.percentual_aprovacao ?? 70;
+
       const processadas: MateriaComStatus[] = (materiasRes.data ?? []).map(
         (m: any) => {
           const atividades: Atividade[] = m.atividades ?? [];
-          const status = calcularStatus(atividades, m.percentual_aprovacao);
+          const status = calcularStatus(atividades, percentualAprovacao);
           const pontosObtidos = calcularPontosGarantidos(atividades);
           const pontosMaximos = atividades.reduce(
             (acc, a) => acc + a.pontos_maximos,
@@ -215,6 +218,7 @@ export default function HomeScreen() {
             pontosObtidos,
             pontosMaximos,
             atividadesPendentes,
+            percentualAprovacao,
           } as MateriaComStatus;
         },
       );
@@ -315,7 +319,7 @@ export default function HomeScreen() {
             tema={tema}
             estilos={styles}
             onPress={() => navigation.navigate('DetalheMateria', { materiaId: item.id })}
-            onQuantoPreciso={() => navigation.navigate('QuantoPreciso', { materia: item })}
+            onQuantoPreciso={() => navigation.navigate('QuantoPreciso', { materia: item, percentualAprovacao: item.percentualAprovacao })}
           />
         )}
       />

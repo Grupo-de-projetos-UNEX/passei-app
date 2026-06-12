@@ -14,7 +14,6 @@ export interface Materia {
   id: string;
   user_id: string;
   nome: string;
-  percentual_aprovacao: number;
   created_at: string;
   updated_at: string;
 }

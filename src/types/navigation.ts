@@ -7,6 +7,6 @@ export type RootStackParamList = {
   DetalheMateria: { materiaId: string };
   LancarNota: { atividadeId: string; materiaId: string };
   EditarAtividades: { materiaId: string };
-  QuantoPreciso: { materia: Materia };
+  QuantoPreciso: { materia: Materia; percentualAprovacao: number };
   Configuracoes: undefined;
 };

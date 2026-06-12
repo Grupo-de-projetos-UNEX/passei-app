@@ -25,21 +25,12 @@ export default function AppNavigator() {
     AuthRepository.getSession().then((s) => setSession(!!s));
 
     const { data: listener } = AuthRepository.onAuthStateChange(
-      async (_event, s) => {
-         console.log('onAuthStateChange disparou:', _event, !!s);
+      async (event, s) => {
         setSession(!!s);
-        if (!s) {
-          // sessão encerrada → manda pra Auth independente de onde estiver
-          navRef.current?.reset({
-            index: 0,
-            routes: [{ name: "Auth" }],
-          });
-        } else {
-          // login feito → manda pra Home
-          navRef.current?.reset({
-            index: 0,
-            routes: [{ name: "Home" }],
-          });
+        if (event === 'SIGNED_OUT') {
+          navRef.current?.reset({ index: 0, routes: [{ name: "Auth" }] });
+        } else if (event === 'SIGNED_IN') {
+          navRef.current?.reset({ index: 0, routes: [{ name: "Home" }] });
         }
       },
     );

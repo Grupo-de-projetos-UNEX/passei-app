@@ -80,6 +80,35 @@ export const criarEstilos = (cores: CoresTema) =>
       backgroundColor: cores.borda,
       marginHorizontal: 16,
     },
+    profileItemRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      paddingHorizontal: 16,
+      paddingVertical: 12,
+    },
+    profileItemLeft: {
+      flex: 1,
+    },
+    nomeInput: {
+      ...tipografia.dmSansBold,
+      fontSize: 15,
+      color: cores.texto,
+      padding: 0,
+      margin: 0,
+    },
+    nomeSaveBtn: {
+      paddingHorizontal: 12,
+      paddingVertical: 6,
+      borderRadius: 8,
+      backgroundColor: cores.primaria,
+      marginLeft: 12,
+    },
+    nomeSaveBtnText: {
+      ...tipografia.dmSansBold,
+      fontSize: 13,
+      color: "#fff",
+    },
 
     // Slider e Preferências
     sliderCard: {
