@@ -6,16 +6,16 @@ import {
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
-  SafeAreaView,
   StatusBar,
   useColorScheme,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { Ionicons } from '@expo/vector-icons';
 
 import { supabase } from '../../lib/supabase';
-import { Materia, Atividade } from '../../types/domain';
+import { Atividade } from '../../types/domain';
 import { RootStackParamList } from '../../types/navigation';
 import {
   calcularMeta,
@@ -216,11 +216,11 @@ export default function QuantoPrecisoScreen() {
             <Ionicons name="close-circle" size={32} color={tema.reprovado} style={{ marginBottom: 12 }} />
             <Text style={styles.cardDestaqueTexto}>
               Não é mais possível{' '}
-              <Text style={{ color: tema.reprovado, fontWeight: '700' }}>atingir a meta pelo regular.</Text>
+              <Text style={{ color: tema.reprovado, fontWeight: '700' }}>atingir a meta para passar.</Text>
             </Text>
             <Text style={styles.cardDestaqueSubtexto}>
               Você tem {garantidos.toFixed(0)} pts, mas precisaria de {meta.toFixed(0)} pts.
-              Mesmo tirando tudo nas pendentes, o máximo seria {(garantidos + emJogo).toFixed(0)} pts.
+              Mesmo tirando nota máxima nas avaliações ou atividades pendentes, o máximo seria {(garantidos + emJogo).toFixed(0)} pts.
             </Text>
           </View>
         )}

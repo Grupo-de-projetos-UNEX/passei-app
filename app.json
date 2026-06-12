@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "passei-app-tmp",
-    "slug": "passei-app-tmp",
+    "name": "passei-app",
+    "slug": "passei-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -16,13 +16,20 @@
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "softwareKeyboardLayoutMode": "pan",
+      "package": "com.ian_salomao.passeiapp"
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
       "expo-font"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "0e11847a-552b-4689-91df-d82a59d48ec4"
+      }
+    }
   }
 }

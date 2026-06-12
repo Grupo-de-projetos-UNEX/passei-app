@@ -54,7 +54,7 @@ export default function AdicionarMateriaScreen({ navigation }: Props) {
   return (
     <KeyboardAvoidingView
       style={styles.overlay}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <View style={styles.sheet}>
         <Text style={styles.titulo}>Nova matéria</Text>

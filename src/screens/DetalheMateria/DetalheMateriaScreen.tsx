@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -11,10 +11,12 @@ import {
   TextInput,
   KeyboardAvoidingView,
   Platform,
+  useColorScheme,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { RootStackParamList } from '../../types/navigation';
 import {
   MateriasRepository,
@@ -28,17 +30,25 @@ import {
   calcularPontosGarantidos,
   calcularMeta,
 } from '../../utils/calculos';
-import { corDoStatus, temaEscuro } from '../../utils/tema';
-
-const tema = temaEscuro;
+import { corDoStatus, temaClaro, temaEscuro, CoresTema } from '../../utils/tema';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'DetalheMateria'>;
 
 export default function DetalheMateriaScreen({ route, navigation }: Props) {
   const { materiaId } = route.params;
+  const isDark = useColorScheme() === 'dark';
+  const tema = isDark ? temaEscuro : temaClaro;
+  const insets = useSafeAreaInsets();
+  const styles = useMemo(() => criarEstilos(tema, insets.top), [tema, insets.top]);
+
   const [materia, setMateria] = useState<Materia | null>(null);
   const [atividades, setAtividades] = useState<Atividade[]>([]);
   const [percentualAprovacao, setPercentualAprovacao] = useState(70);
+  // Editar nome da matéria
+  const [editarNomeModal, setEditarNomeModal] = useState(false);
+  const [nomeTemp, setNomeTemp] = useState('');
+  const [salvandoNome, setSalvandoNome] = useState(false);
+  const [erroNome, setErroNome] = useState('');
   const [carregando, setCarregando] = useState(true);
 
   // Bottom sheet state
@@ -178,6 +188,9 @@ export default function DetalheMateriaScreen({ route, navigation }: Props) {
   const temNota = atividadeSelecionada?.pontos_obtidos !== null;
   const desabilitado = !valorNota.trim() || salvando;
 
+  const formatarPontos = (valor: number): string =>
+    Number.isInteger(valor) ? String(valor) : valor.toFixed(1);
+
   return (
     <View style={styles.container}>
       {/* Cabeçalho */}
@@ -185,7 +198,13 @@ export default function DetalheMateriaScreen({ route, navigation }: Props) {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.botaoIcone}>
           <Ionicons name="chevron-back" size={24} color={tema.texto} />
         </TouchableOpacity>
-        <Text style={styles.nomeTitulo}>{materia.nome}</Text>
+        <TouchableOpacity
+          style={{ flex: 1, alignItems: 'center' }}
+          onPress={() => { setNomeTemp(materia.nome); setErroNome(''); setEditarNomeModal(true); }}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.nomeTitulo}>{materia.nome}</Text>
+        </TouchableOpacity>
         <TouchableOpacity
           style={styles.botaoIcone}
           onPress={() => navigation.navigate('EditarAtividades', { materiaId: materia.id })}
@@ -193,6 +212,65 @@ export default function DetalheMateriaScreen({ route, navigation }: Props) {
           <Ionicons name="create-outline" size={22} color={tema.texto} />
         </TouchableOpacity>
       </View>
+
+      {/* Modal para editar nome da matéria */}
+      <Modal
+        visible={editarNomeModal}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setEditarNomeModal(false)}
+      >
+        <KeyboardAvoidingView
+          style={styles.modalFlex}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        >
+          <TouchableOpacity style={styles.overlay} activeOpacity={1} onPress={() => setEditarNomeModal(false)} />
+          <View style={styles.sheet}>
+            <View style={styles.sheetHeader}>
+              <Text style={styles.sheetTitulo}>Editar nome da matéria</Text>
+              <TouchableOpacity style={styles.closeBtn} onPress={() => setEditarNomeModal(false)}>
+                <Ionicons name="close" size={16} color={tema.textoSecundario} />
+              </TouchableOpacity>
+            </View>
+
+            <Text style={styles.sheetSubtitulo}>Altere o nome da matéria abaixo</Text>
+
+            <TextInput
+              style={[styles.notaInput, erroNome ? styles.notaInputErro : null]}
+              value={nomeTemp}
+              onChangeText={(t) => { setNomeTemp(t); setErroNome(''); }}
+              placeholder="Nome da matéria"
+              placeholderTextColor={tema.textoDesabilitado}
+              returnKeyType="done"
+              selectTextOnFocus
+            />
+
+            {!!erroNome && <Text style={styles.erroInline}>{erroNome}</Text>}
+
+            <TouchableOpacity
+              style={[styles.btnSalvar, salvandoNome && styles.btnDesabilitado]}
+              onPress={async () => {
+                const trimmed = nomeTemp.trim();
+                if (!trimmed) { setErroNome('Informe um nome válido.'); return; }
+                if (!materia) return;
+                setSalvandoNome(true);
+                try {
+                  const updated = await MateriasRepository.updateMateria(materia.id, { nome: trimmed });
+                  setMateria(updated);
+                  setEditarNomeModal(false);
+                } catch (err: any) {
+                  setErroNome(err?.message ?? 'Erro ao salvar.');
+                } finally {
+                  setSalvandoNome(false);
+                }
+              }}
+              activeOpacity={0.85}
+            >
+              {salvandoNome ? <ActivityIndicator color="#fff" size="small" /> : <Text style={styles.btnSalvarTexto}>Salvar</Text>}
+            </TouchableOpacity>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
 
       <FlatList
         data={atividades}
@@ -212,9 +290,9 @@ export default function DetalheMateriaScreen({ route, navigation }: Props) {
               </View>
               <View style={styles.pontosRow}>
                 <Text style={[styles.pontosNumero, { color: corStatus }]}>
-                  {Math.round(pontosGarantidos)}
+                  {formatarPontos(pontosGarantidos)}
                 </Text>
-                <Text style={styles.pontosTotal}> / {Math.round(meta)}</Text>
+                <Text style={styles.pontosTotal}> / {formatarPontos(meta)}</Text>
               </View>
               <View style={styles.progressoBg}>
                 <View
@@ -371,7 +449,7 @@ export default function DetalheMateriaScreen({ route, navigation }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const criarEstilos = (tema: CoresTema, topInset: number) => StyleSheet.create({
   container: { flex: 1, backgroundColor: tema.fundo },
   centralizador: { flex: 1, alignItems: 'center', justifyContent: 'center' },
 
@@ -381,7 +459,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 8,
-    paddingTop: 52,
+    paddingTop: topInset + 12,
     paddingBottom: 12,
     backgroundColor: tema.fundo,
   },
