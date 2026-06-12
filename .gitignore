@@ -144,4 +144,4 @@ vite.config.ts.timestamp-*
 
 CLAUDE.md
 .claude/*
-.expo/*
+.expo/

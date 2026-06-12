@@ -11,12 +11,12 @@ import {
   Platform,
   useColorScheme,
 } from 'react-native';
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { StackScreenProps } from '@react-navigation/stack';
 import { RootStackParamList } from '../../types/navigation';
 import { MateriasRepository, AuthRepository } from '../../lib/repositories';
 import { temaClaro, temaEscuro, CoresTema } from '../../utils/tema';
 
-type Props = NativeStackScreenProps<RootStackParamList, 'AdicionarMateria'>;
+type Props = StackScreenProps<RootStackParamList, 'AdicionarMateria'>;
 
 export default function AdicionarMateriaScreen({ navigation }: Props) {
   const isDark = useColorScheme() === 'dark';

@@ -14,7 +14,7 @@ import {
   useColorScheme,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { StackScreenProps } from '@react-navigation/stack';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { RootStackParamList } from '../../types/navigation';
@@ -32,7 +32,7 @@ import {
 } from '../../utils/calculos';
 import { corDoStatus, temaClaro, temaEscuro, CoresTema } from '../../utils/tema';
 
-type Props = NativeStackScreenProps<RootStackParamList, 'DetalheMateria'>;
+type Props = StackScreenProps<RootStackParamList, 'DetalheMateria'>;
 
 export default function DetalheMateriaScreen({ route, navigation }: Props) {
   const { materiaId } = route.params;
